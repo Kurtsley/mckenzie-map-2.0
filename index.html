@@ -4,39 +4,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapbox GeoJSON</title>
-    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
-    <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />    
+    <title>Mckenzie Map 2.0</title>
+    <link href='css/style.css' rel="stylesheet" />
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
+    <script id="search-js" defer src="https://api.mapbox.com/search-js/v1.0.0-beta.24/web.js"></script>
 </head>
 
 <body>
-    <div id="map" style="height: 100vh;"></div>
+    <mapbox-search-box id="searchBox"
+        access-token="pk.eyJ1Ijoia3VydHNsZXkiLCJhIjoiY2xkMG9qZ2k5MDM5djNxcDdlcmgyY2JhdSJ9.egjns8W_yyCThkjoE0W1lg"
+        proximity="0,0"></mapbox-search-box>
+    <div id="map"></div>
     <script>
-        mapboxgl.accessToken = 'pk.eyJ1Ijoia3VydHNsZXkiLCJhIjoiY2xkMG9qZ2k5MDM5djNxcDdlcmgyY2JhdSJ9.egjns8W_yyCThkjoE0W1lg';
-        const map = new mapboxgl.Map({
-            container: 'map',
-            style: 'mapbox://styles/mapbox/satellite-streets-v12',
-            center: [-103.43862939401251, 47.78908392054084],  // Coordinates for the center
-            zoom: 9
-        });
+        const script = document.getElementById('search-js');
 
-        // Load GeoJSON and add to map
-        map.on('load', function () {
-            map.addSource('points', {
-                type: 'geojson',
-                data: 'data/addresses.geojson'
+        script.onload = function () {
+            const accessToken = 'pk.eyJ1Ijoia3VydHNsZXkiLCJhIjoiY2xkMG9qZ2k5MDM5djNxcDdlcmgyY2JhdSJ9.egjns8W_yyCThkjoE0W1lg';
+
+            const map = new mapboxgl.Map({
+                accessToken: accessToken,
+                container: 'map',
+                style: 'mapbox://styles/mapbox/satellite-streets-v12',
+                center: [-103.43862939401251, 47.78908392054084],  // Coordinates for the center
+                zoom: 10,
+                customAttribution: "Coded by Kurtsley 2024",
             });
 
-            map.addLayer({
-                id: 'points-layer',
-                type: 'circle',
-                source: 'points',
-                paint: {
-                    'circle-radius': 4,
-                    'circle-color': '#F0FD05',
-                }
+            const searchBox = new mapboxsearch.MapboxSearchBox();
+
+            searchBox.accessToken = accessToken;
+
+            searchBox.mapboxgl = mapboxgl;
+            searchBox.bindMap(map);
+
+            map.on('style.load', function () {
+                // Zoom control
+                map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+                map.addSource('points', {
+                    type: 'geojson',
+                    data: 'data/addresses.geojson',
+                    cluster: true,
+                    clusterMaxZoom: 14,
+                    clusterRadius: 50,
+                });
+
+                map.addLayer({
+                    id: 'clusters',
+                    type: 'circle',
+                    source: 'points',
+                    filter: ['has', 'point_count'], // Only clusters
+                    paint: {
+                        'circle-color': [
+                            'step',
+                            ['get', 'point_count'],
+                            '#51bbd6', // Cluster color for low counts
+                            100, '#f28cb1', // Cluster color for medium counts
+                            750, '#f1f075' // Cluster color for high counts
+                        ],
+                        'circle-radius': [
+                            'step',
+                            ['get', 'point_count'],
+                            20, // Radius for low counts
+                            100, 30, // Radius for medium counts
+                            750, 40 // Radius for high counts
+                        ],
+                        'circle-opacity': 0.7,
+                    }
+                });
+
+                map.addLayer({
+                    id: 'cluster-count',
+                    type: 'symbol',
+                    source: 'points',
+                    filter: ['has', 'point_count'], // Only clusters
+                    layout: {
+                        'text-field': '{point_count_abbreviated}',
+                        'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                        'text-size': 12
+                    }
+                });
+
+                map.addLayer({
+                    id: 'unclustered-point',
+                    type: 'circle',
+                    source: 'points',
+                    filter: ['!', ['has', 'point_count']], // Only non-clusters
+                    paint: {
+                        'circle-radius': [
+                            'interpolate',
+                            ['linear'],
+                            ['zoom'],
+                            0, 4,
+                            10, 8,
+                            20, 12,
+                        ],
+                        'circle-color': '#F0FD05',
+                        'circle-opacity': 0.7,
+                    }
+                });
+
+                map.addLayer({
+                    id: 'labels',
+                    type: 'symbol',
+                    source: 'points',
+                    layout: {
+                        'text-field': ['get', 'address'],
+                        'text-size': 14,
+                        'text-offset': [2, -2],
+                        'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                        'visibility': 'none',
+                    },
+                    paint: {
+                        'text-color': '#FFFFFF'
+                    },
+                });
+
+
+                map.on('zoom', function () {
+                    const zoomLevel = map.getZoom();
+
+                    if (zoomLevel >= 14) {
+                        map.setLayoutProperty('labels', 'visibility', 'visible');
+                    } else {
+                        map.setLayoutProperty('labels', 'visibility', 'none');
+                    }
+                });
+
+                map.on('mouseenter', 'unclustered-point', () => {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+
+                map.on('mouseleave', 'unclustered-point', () => {
+                    map.getCanvas().style.cursor = '';
+                });
+
+                map.on('click', 'unclustered-point', (e) => {
+                    const coords = e.features[0].geometry.coordinates.slice();
+                    const address = e.features[0].properties.address || 'No address available';
+
+                    new mapboxgl.Popup()
+                        .setLngLat(coords)
+                        .setHTML(address)
+                        .addTo(map);
+                });
             });
-        });
+        }
+
+
     </script>
 </body>
 
