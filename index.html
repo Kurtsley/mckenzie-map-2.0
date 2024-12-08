@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapbox GeoJSON</title>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />    
+</head>
+
+<body>
+    <div id="map" style="height: 100vh;"></div>
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1Ijoia3VydHNsZXkiLCJhIjoiY2xkMG9qZ2k5MDM5djNxcDdlcmgyY2JhdSJ9.egjns8W_yyCThkjoE0W1lg';
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/satellite-streets-v12',
+            center: [-103.43862939401251, 47.78908392054084],  // Coordinates for the center
+            zoom: 9
+        });
+
+        // Load GeoJSON and add to map
+        map.on('load', function () {
+            map.addSource('points', {
+                type: 'geojson',
+                data: 'data/addresses.geojson'
+            });
+
+            map.addLayer({
+                id: 'points-layer',
+                type: 'circle',
+                source: 'points',
+                paint: {
+                    'circle-radius': 4,
+                    'circle-color': '#F0FD05',
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
