@@ -21,187 +21,193 @@
 </head>
 
 <body>
-    <div id="map"></div>
-    <script>
-        const accessToken = 'pk.eyJ1Ijoia3VydHNsZXkiLCJhIjoiY2xkMG9qZ2k5MDM5djNxcDdlcmgyY2JhdSJ9.egjns8W_yyCThkjoE0W1lg';
+    <div id="map-container">
+        <div id="map"></div>
+        <a id="buyMeACoffeeBtn" href="https://www.buymeacoffee.com/Kurtsley" target="_blank">
+            <img src="https://cdn.buymeacoffee.com/buttons/v2/default-green.png" alt="Buy Me A Coffee"
+                style="height: 40px !important;width: auto !important;"></a>
+        <script>
+            const accessToken = 'pk.eyJ1Ijoia3VydHNsZXkiLCJhIjoiY2xkMG9qZ2k5MDM5djNxcDdlcmgyY2JhdSJ9.egjns8W_yyCThkjoE0W1lg';
 
-        const map = new mapboxgl.Map({
-            accessToken: accessToken,
-            container: 'map',
-            style: 'mapbox://styles/mapbox/satellite-streets-v12',
-            center: [-103.43862939401251, 47.78908392054084],  // Coordinates for the center
-            zoom: 10,
-            customAttribution: "Coded by Kurtsley 2024",
-        });
-
-        let geojsonData = null;
-
-        fetch('data/addresses.geojson')
-            .then(response => response.json())
-            .then(data => {
-                geojsonData = data;
-            })
-            .catch(error => console.error('Error loading geojson data', error));
-
-        function localGeocoder(query) {
-            const matchingFeatures = [];
-
-            if (!geojsonData) return [];
-
-            const features = geojsonData.features;
-
-            for (const feature of features) {
-                if (
-                    feature.properties.address &&
-                    feature.properties.address.toLowerCase().includes(query.toLowerCase())
-                ) {
-                    feature['place_name'] = feature.properties.address;
-                    feature['center'] = feature.geometry.coordinates;
-                    matchingFeatures.push(feature);
-                }
-            }
-            return matchingFeatures;
-        }
-
-        function navigateURL(feature) {
-            let url = "https://www.google.com/maps/search/?api=1&query=" +
-                feature.properties.ycoord +
-                "," +
-                feature.properties.xcoord;
-
-            return url;
-        }
-
-        map.on('style.load', function () {
-            // Zoom control
-            map.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-            map.addSource('points', {
-                type: 'geojson',
-                data: 'data/addresses.geojson',
-                cluster: true,
-                clusterMaxZoom: 14,
-                clusterRadius: 50,
-            });
-
-            map.addLayer({
-                id: 'clusters',
-                type: 'circle',
-                source: 'points',
-                filter: ['has', 'point_count'], // Only clusters
-                paint: {
-                    'circle-color': [
-                        'step',
-                        ['get', 'point_count'],
-                        '#51bbd6', // Cluster color for low counts
-                        100, '#f28cb1', // Cluster color for medium counts
-                        750, '#f1f075' // Cluster color for high counts
-                    ],
-                    'circle-radius': [
-                        'step',
-                        ['get', 'point_count'],
-                        20, // Radius for low counts
-                        100, 30, // Radius for medium counts
-                        750, 40 // Radius for high counts
-                    ],
-                    'circle-opacity': 0.7,
-                }
-            });
-
-            map.addLayer({
-                id: 'cluster-count',
-                type: 'symbol',
-                source: 'points',
-                filter: ['has', 'point_count'], // Only clusters
-                layout: {
-                    'text-field': '{point_count_abbreviated}',
-                    'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-                    'text-size': 12
-                }
-            });
-
-            map.addLayer({
-                id: 'unclustered-point',
-                type: 'circle',
-                source: 'points',
-                filter: ['!', ['has', 'point_count']], // Only non-clusters
-                paint: {
-                    'circle-radius': [
-                        'interpolate',
-                        ['linear'],
-                        ['zoom'],
-                        0, 4,
-                        10, 8,
-                        20, 12,
-                    ],
-                    'circle-color': '#F0FD05',
-                    'circle-opacity': 0.7,
-                }
-            });
-
-            map.addLayer({
-                id: 'labels',
-                type: 'symbol',
-                source: 'points',
-                layout: {
-                    'text-field': ['get', 'address'],
-                    'text-size': 14,
-                    'text-offset': [2, -2],
-                    'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-                    'visibility': 'none',
-                },
-                paint: {
-                    'text-color': '#FFFFFF'
-                },
-            });
-
-            const geocoder = new MapboxGeocoder({
+            const map = new mapboxgl.Map({
                 accessToken: accessToken,
-                mapboxgl: mapboxgl,
-                localGeocoderOnly: true,
-                localGeocoder: localGeocoder,
-                placeholder: "Enter address...",
-                zoom: 14,
-                marker: false,
+                container: 'map',
+                style: 'mapbox://styles/mapbox/satellite-streets-v12',
+                center: [-103.43862939401251, 47.78908392054084],  // Coordinates for the center
+                zoom: 10,
+                customAttribution: "Coded by Kurtsley 2024",
             });
 
-            map.addControl(geocoder, 'top-left');
+            let geojsonData = null;
 
-            geocoder.on('result', (e) => {
-                map.flyTo({ center: e.result.center, zoom: 17 });
-            });
+            fetch('data/addresses.geojson')
+                .then(response => response.json())
+                .then(data => {
+                    geojsonData = data;
+                })
+                .catch(error => console.error('Error loading geojson data', error));
 
-            map.on('zoom', function () {
-                const zoomLevel = map.getZoom();
+            function localGeocoder(query) {
+                const matchingFeatures = [];
 
-                if (zoomLevel >= 14) {
-                    map.setLayoutProperty('labels', 'visibility', 'visible');
-                } else {
-                    map.setLayoutProperty('labels', 'visibility', 'none');
+                if (!geojsonData) return [];
+
+                const features = geojsonData.features;
+
+                for (const feature of features) {
+                    if (
+                        feature.properties.address &&
+                        feature.properties.address.toLowerCase().includes(query.toLowerCase())
+                    ) {
+                        feature['place_name'] = feature.properties.address;
+                        feature['center'] = feature.geometry.coordinates;
+                        matchingFeatures.push(feature);
+                    }
                 }
+                return matchingFeatures;
+            }
+
+            function navigateURL(feature) {
+                let url = "https://www.google.com/maps/search/?api=1&query=" +
+                    feature.properties.ycoord +
+                    "," +
+                    feature.properties.xcoord;
+
+                return url;
+            }
+
+            map.on('load', function () {
+                // Zoom control
+                map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+                map.addSource('points', {
+                    type: 'geojson',
+                    data: 'data/addresses.geojson',
+                    cluster: true,
+                    clusterMaxZoom: 14,
+                    clusterRadius: 50,
+                });
+
+                map.addLayer({
+                    id: 'clusters',
+                    type: 'circle',
+                    source: 'points',
+                    filter: ['has', 'point_count'], // Only clusters
+                    paint: {
+                        'circle-color': [
+                            'step',
+                            ['get', 'point_count'],
+                            '#51bbd6', // Cluster color for low counts
+                            100, '#f28cb1', // Cluster color for medium counts
+                            750, '#f1f075' // Cluster color for high counts
+                        ],
+                        'circle-radius': [
+                            'step',
+                            ['get', 'point_count'],
+                            20, // Radius for low counts
+                            100, 30, // Radius for medium counts
+                            750, 40 // Radius for high counts
+                        ],
+                        'circle-opacity': 0.7,
+                    }
+                });
+
+                map.addLayer({
+                    id: 'cluster-count',
+                    type: 'symbol',
+                    source: 'points',
+                    filter: ['has', 'point_count'], // Only clusters
+                    layout: {
+                        'text-field': '{point_count_abbreviated}',
+                        'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                        'text-size': 12
+                    }
+                });
+
+                map.addLayer({
+                    id: 'unclustered-point',
+                    type: 'circle',
+                    source: 'points',
+                    filter: ['!', ['has', 'point_count']], // Only non-clusters
+                    paint: {
+                        'circle-radius': [
+                            'interpolate',
+                            ['linear'],
+                            ['zoom'],
+                            0, 4,
+                            10, 8,
+                            20, 12,
+                        ],
+                        'circle-color': '#F0FD05',
+                        'circle-opacity': 0.7,
+                    }
+                });
+
+                map.addLayer({
+                    id: 'labels',
+                    type: 'symbol',
+                    source: 'points',
+                    layout: {
+                        'text-field': ['get', 'address'],
+                        'text-size': 14,
+                        'text-offset': [2, -2],
+                        'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                        'visibility': 'none',
+                    },
+                    paint: {
+                        'text-color': '#FFFFFF'
+                    },
+                });
+
+                const geocoder = new MapboxGeocoder({
+                    accessToken: accessToken,
+                    mapboxgl: mapboxgl,
+                    localGeocoderOnly: true,
+                    localGeocoder: localGeocoder,
+                    placeholder: "Enter address...",
+                    zoom: 14,
+                    marker: false,
+                });
+
+                map.addControl(geocoder, 'top-left');
+
+                geocoder.on('result', (e) => {
+                    map.flyTo({ center: e.result.center, zoom: 17 });
+                });
+
+                map.on('zoom', function () {
+                    const zoomLevel = map.getZoom();
+
+                    if (zoomLevel >= 14) {
+                        map.setLayoutProperty('labels', 'visibility', 'visible');
+                    } else {
+                        map.setLayoutProperty('labels', 'visibility', 'none');
+                    }
+                });
+
+                map.on('mouseenter', 'unclustered-point', () => {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+
+                map.on('mouseleave', 'unclustered-point', () => {
+                    map.getCanvas().style.cursor = '';
+                });
+
+                map.on('click', 'unclustered-point', (e) => {
+                    const feature = e.features[0];
+                    window.open(navigateURL(feature), '_blank');
+                });
             });
 
-            map.on('mouseenter', 'unclustered-point', () => {
-                map.getCanvas().style.cursor = 'pointer';
-            });
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/service-worker.js');
+                });
+            }
 
-            map.on('mouseleave', 'unclustered-point', () => {
-                map.getCanvas().style.cursor = '';
-            });
+        </script>
+    </div>
 
-            map.on('click', 'unclustered-point', (e) => {
-                const feature = e.features[0];
-                window.open(navigateURL(feature), '_blank');
-            });
-        });
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js');
-            });
-        }
-
-    </script>
 </body>
 
 </html>

@@ -1,8 +1,36 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden; /* Prevent scrolling */
+}
+
+#map-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+}
+
 #map {
-    height: 100vh;
+    width: 100%;
+    height: 100%;
 }
 
 .mapboxgl-ctrl-geocoder {
     max-width: 250px;
     margin: 10px;
-  }
+}
+
+#buyMeACoffeeBtn {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%);
+    bottom: 5px;
+    z-index: 9999;
+}
