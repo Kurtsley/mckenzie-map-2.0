@@ -62,6 +62,15 @@
             return matchingFeatures;
         }
 
+        function navigateURL(feature) {
+            let url = "https://www.google.com/maps/search/?api=1&query=" +
+                feature.properties.ycoord +
+                "," +
+                feature.properties.xcoord;
+
+            return url;
+        }
+
         map.on('style.load', function () {
             // Zoom control
             map.addControl(new mapboxgl.NavigationControl(), 'top-right');
@@ -180,13 +189,8 @@
             });
 
             map.on('click', 'unclustered-point', (e) => {
-                const coords = e.features[0].geometry.coordinates.slice();
-                const address = e.features[0].properties.address || 'No address available';
-
-                new mapboxgl.Popup()
-                    .setLngLat(coords)
-                    .setHTML(address)
-                    .addTo(map);
+                const feature = e.features[0];
+                window.open(navigateURL(feature), '_blank');
             });
         });
 
