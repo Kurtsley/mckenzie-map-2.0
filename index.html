@@ -173,6 +173,12 @@
 
                 geocoder.on('result', (e) => {
                     map.flyTo({ center: e.result.center, zoom: 17 });
+
+                    // Get the input field of the geocoder and blur it to hide the keyboard
+                    const inputField = document.querySelector('.mapboxgl-ctrl-geocoder');
+                    if (inputField) {
+                        inputField.blur();
+                    }
                 });
 
                 map.on('zoom', function () {
