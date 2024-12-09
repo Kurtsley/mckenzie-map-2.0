@@ -38,8 +38,21 @@
                 customAttribution: "Developed by Kurtsley",
             });
 
-            let geojsonData = null;
+            // Move donate button to see attribution
+            const moreinfobtn = document.querySelector('.mapboxgl-ctrl-attrib-button');
+            const donatebtn = document.getElementById('buyMeACoffeeBtn');
 
+            moreinfobtn.addEventListener('click', function () {
+                moreinfobtn.classList.toggle('expanded');
+                const expanded = moreinfobtn.classList.contains('expanded');
+                if (expanded) {
+                    donatebtn.style.transform = 'translate(-50%, -50px)';
+                } else {
+                    donatebtn.style.transform = 'translate(-50%, 0px)';
+                }
+            });
+
+            let geojsonData = null;
             fetch('data/addresses.geojson')
                 .then(response => response.json())
                 .then(data => {

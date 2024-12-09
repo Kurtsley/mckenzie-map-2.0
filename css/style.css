@@ -30,7 +30,8 @@ html, body {
 #buyMeACoffeeBtn {
     position: absolute;
     left: 50%;
-    transform: translate(-50%);
+    transform: translate(-50%, 0);
     bottom: 5px;
     z-index: 9999;
+    transition: 0.3s;
 }
