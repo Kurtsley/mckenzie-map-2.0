@@ -53,7 +53,9 @@
             });
 
             let geojsonData = null;
-            fetch('data/addresses.geojson')
+            //fetch('data/addresses.geojson') - Using full unless performance is impacted
+
+            fetch('data/mcfull.geojson')
                 .then(response => response.json())
                 .then(data => {
                     geojsonData = data;
@@ -95,7 +97,8 @@
 
                 map.addSource('points', {
                     type: 'geojson',
-                    data: 'data/addresses.geojson',
+                    // data: 'data/addresses.geojson', - Using full unless performance is impacted
+                    data: 'data/mcfull.geojson',
                     cluster: true,
                     clusterMaxZoom: 14,
                     clusterRadius: 50,
