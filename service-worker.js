@@ -4,7 +4,7 @@ const URLS_TO_CACHE = [
   '/index.html',
   '/data/mcfull.geojson',
   '/static/manifest.json',
-  '/static/map.png',
+  '/static/mapmc.png',
   '/css/style.css',
 ];
 
