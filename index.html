@@ -81,10 +81,9 @@
             }
 
             function navigateURL(feature) {
-                let url = "https://www.google.com/maps/search/?api=1&query=" +
-                    feature.properties.ycoord +
-                    "," +
-                    feature.properties.xcoord;
+                const [long, lat] = feature.geometry.coordinates;
+                const url = "https://www.google.com/maps/search/?api=1&query=" +
+                    lat + "," + long;
 
                 return url;
             }
