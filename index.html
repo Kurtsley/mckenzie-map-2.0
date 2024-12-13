@@ -32,7 +32,7 @@
             const map = new mapboxgl.Map({
                 accessToken: accessToken,
                 container: 'map',
-                style: 'mapbox://styles/mapbox/satellite-streets-v12',
+                style: 'mapbox://styles/kurtsley/cm4m3fm08004001s854hee83t',
                 center: [-103.43862939401251, 47.78908392054084],  // Coordinates for the center
                 zoom: 10,
                 customAttribution: "Developed by Kurtsley",
@@ -53,9 +53,7 @@
             });
 
             let geojsonData = null;
-            //fetch('data/addresses.geojson') - Using full unless performance is impacted
-
-            fetch('data/mcfull.geojson')
+            fetch('data/addresses.geojson')
                 .then(response => response.json())
                 .then(data => {
                     geojsonData = data;
@@ -97,8 +95,7 @@
 
                 map.addSource('points', {
                     type: 'geojson',
-                    // data: 'data/addresses.geojson', - Using full unless performance is impacted
-                    data: 'data/mcfull.geojson',
+                    data: 'data/addresses.geojson',
                     cluster: true,
                     clusterMaxZoom: 14,
                     clusterRadius: 50,
@@ -200,7 +197,6 @@
 
                 map.on('zoom', function () {
                     const zoomLevel = map.getZoom();
-
                     if (zoomLevel >= 14) {
                         map.setLayoutProperty('labels', 'visibility', 'visible');
                     } else {
