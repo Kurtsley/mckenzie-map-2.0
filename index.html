@@ -96,12 +96,6 @@
                 map.setMinZoom(8);
                 map.setMaxZoom(17);
 
-                // Set bounds
-                map.setMaxBounds([
-                    [-104.25740512465673, 47.19530549590402],
-                    [-102.41197113708417, 48.28473437281036]
-                ]);
-
                 map.addSource('points', {
                     type: 'geojson',
                     data: 'data/addresses.geojson',
