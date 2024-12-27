@@ -53,7 +53,7 @@
             });
 
             let geojsonData = null;
-            fetch('data/addresses.geojson')
+            fetch('data/addresses-new.geojson')
                 .then(response => response.json())
                 .then(data => {
                     geojsonData = data;
@@ -98,7 +98,7 @@
 
                 map.addSource('points', {
                     type: 'geojson',
-                    data: 'data/addresses.geojson',
+                    data: 'data/addresses-new.geojson',
                     cluster: true,
                     clusterMaxZoom: 14,
                     clusterRadius: 50,
