@@ -29,13 +29,6 @@
         <script>
             const accessToken = 'pk.eyJ1Ijoia3VydHNsZXkiLCJhIjoiY200Z2o3a3FnMW4xMjJqcTAxd3U2dXpqMiJ9.MEvI5BsjappREQFxpcHvow';
 
-            if (!localStorage.getItem('alertShown')) {
-                
-                alert("John, I fixed the ND Highway issue. You're welcome. -Kurt"); 
-                localStorage.setItem('alertShown', 'true');
-                
-            }
-
             const map = new mapboxgl.Map({
                 accessToken: accessToken,
                 container: 'map',
@@ -167,6 +160,17 @@
                 });
 
                 map.addLayer({
+                    id: 'clickArea',
+                    type: 'circle',
+                    source: 'points',
+                    filter: ['!', ['has', 'point_count']], // Only non-clusters
+                    paint: {
+                        'circle-radius': 15,
+                        'circle-color': 'rgba(0, 0, 0, 0)',
+                    },
+                });
+
+                map.addLayer({
                     id: 'labels',
                     type: 'symbol',
                     source: 'points',
@@ -214,15 +218,15 @@
                     }
                 });
 
-                map.on('mouseenter', 'unclustered-point', () => {
+                map.on('mouseenter', 'clickArea', () => {
                     map.getCanvas().style.cursor = 'pointer';
                 });
 
-                map.on('mouseleave', 'unclustered-point', () => {
+                map.on('mouseleave', 'clickArea', () => {
                     map.getCanvas().style.cursor = '';
                 });
 
-                map.on('click', 'unclustered-point', (e) => {
+                map.on('click', 'clickArea', (e) => {
                     const feature = e.features[0];
                     window.open(navigateURL(feature), '_blank');
                 });
