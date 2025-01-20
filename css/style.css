@@ -35,3 +35,8 @@ html, body {
     z-index: 9999;
     transition: 0.3s;
 }
+
+.popup-style {
+    font-size: 20px;
+    font-weight: bold;
+  }

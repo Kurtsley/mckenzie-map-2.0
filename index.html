@@ -18,6 +18,8 @@
     <link rel="stylesheet"
         href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.3/mapbox-gl-geocoder.css"
         type="text/css">
+    <!-- Popup.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@simondmc/popup-js@1.4.2/popup.min.js"></script>
 </head>
 
 <body>
@@ -198,6 +200,22 @@
                 });
 
                 map.addControl(geocoder, 'top-left');
+
+                const changesPopup = new Popup({
+                    id: "changes-popup",
+                    hideTitle: true,
+                    widthMultiplier: 0.8,
+                    fontSizeMultiplier: 0.7,
+                    showImmediately: true,
+                    showOnce: true,
+                    content: `
+                        popup-style§What's New
+                        big-margin§- Larger click area for navigation
+                        - More search results available
+                        big-margin§- Kurt
+                        
+                        `,
+                });
 
                 geocoder.on('result', (e) => {
                     map.flyTo({ center: e.result.center, zoom: 17 });
