@@ -1,7 +1,6 @@
 const CACHE_NAME = 'mckenzie2-cache';
 const URLS_TO_CACHE = [
   '/',
-  '/index.html',
   '/data/addresses-new.geojson',
   '/static/manifest.json',
   '/static/mapmc.png',
