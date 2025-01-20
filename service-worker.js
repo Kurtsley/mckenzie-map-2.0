@@ -1,10 +1,10 @@
 const CACHE_NAME = 'mckenzie2-cache';
 const URLS_TO_CACHE = [
-  '/',
-  '/data/addresses-new.geojson',
-  '/static/manifest.json',
-  '/static/mapmc.png',
-  '/css/style.css',
+  './',
+  './data/addresses-new.geojson',
+  './static/manifest.json',
+  './static/mapmc.png',
+  './css/style.css',
 ];
 
 self.addEventListener('install', (event) => {
@@ -16,7 +16,7 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.url.includes('/data/addresses-new.geojson')) {
+  if (event.request.url.includes('./data/addresses-new.geojson')) {
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
         if (cachedResponse) {
