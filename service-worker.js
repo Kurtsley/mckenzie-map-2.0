@@ -1,6 +1,6 @@
 // Change the date when updating!!
 
-const CACHE_NAME = 'mckenzie-cache-1-25-2025';
+const CACHE_NAME = 'mckenzie-cache-1-26-2025';
 const URLS_TO_CACHE = [
   './',
   './index.html',
