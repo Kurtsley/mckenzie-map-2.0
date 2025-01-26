@@ -8,9 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mckenzie Map 2.0</title>
     <link rel="manifest" href="static/manifest.json" />
+    <link rel="icon" href="static/mapmc.png" type="image/png">
     <link href='css/style.css' rel="stylesheet" />
-    <link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
-    <script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.9.3/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.9.3/mapbox-gl.js"></script>
 
     <!-- Load the `mapbox-gl-geocoder` plugin. -->
     <script
@@ -156,8 +157,8 @@
                             10, 8,
                             20, 12,
                         ],
-                        'circle-color': '#F0FD05',
-                        'circle-opacity': 0.7,
+                        'circle-color': '#FF6600',
+                        'circle-opacity': 0.8,
                     }
                 });
 
@@ -167,7 +168,7 @@
                     source: 'points',
                     filter: ['!', ['has', 'point_count']], // Only non-clusters
                     paint: {
-                        'circle-radius': 15,
+                        'circle-radius': 20,
                         'circle-color': 'rgba(0, 0, 0, 0)',
                     },
                 });
@@ -252,10 +253,30 @@
             });
 
             if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('./service-worker.js');
+                navigator.serviceWorker.register('./service-worker.js').then((registration) => {
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // Notify the user a new version is available
+                                const shouldReload = confirm(
+                                    'A new version is available. Do you want to reload the page to update?'
+                                );
+                                if (shouldReload) {
+                                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                }
+                            }
+                        });
+                    });
+                });
+
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    // Reload the page when the new service worker takes over
+                    window.location.reload();
                 });
             }
+
 
         </script>
     </div>
