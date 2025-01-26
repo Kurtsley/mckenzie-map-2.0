@@ -1,5 +1,6 @@
-const localDate = new Date().toLocaleDateString('en-CA'); // Format: YYYY-MM-DD
-const CACHE_NAME = `mckenzie-cache-${localDate}`;
+// Change the date when updating!!
+
+const CACHE_NAME = 'mckenzie-cache-1-25-2025';
 const URLS_TO_CACHE = [
   './',
   './index.html',
