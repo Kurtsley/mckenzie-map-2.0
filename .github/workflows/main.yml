@@ -1,1 +1,110 @@
+# Workflow to fetch the latest well updates
 
+name: Update adress file
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fetch_and_convert:
+    runs-on: ubuntu-latest
+    env:
+      DATA_DIR: "data/"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set current date
+        id: set_dates
+        run: |
+          CURRENT_DATE=$(date +'%Y-%m-%d')
+          echo "CURRENT_DATE=$CURRENT_DATE" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl unzip gdal-bin tippecanoe
+
+      - name: Download ZIP file
+        run: |
+          URL="https://mckenziegis.co.mckenzie.nd.us/download/AddressSites.zip"
+          curl -s -o $DATA_DIR/address-new.zip $URL
+
+      - name: Extract shapefile from ZIP
+        run: |
+          unzip -o $DATA_DIR/address-new.zip -d extracted
+
+      - name: Convert Shapefile to GeoJSON
+        run: |
+          SHAPEFILE=$(find extracted -name "*.shp" | head -n 1)
+          if [ -n "$SHAPEFILE" ]; then
+            ogr2ogr -f "GeoJSON" $DATA_DIR/address-new.geojson $SHAPEFILE
+            echo "GeoJSON file created: address-new.geojson"
+          else
+            echo "No shapefile found in the archive."
+            exit 1
+          fi
+
+      - name: Trim GeoJSON properties
+        run: |
+          jq '{
+            "type": "FeatureCollection",
+            "features": [
+              .features[] | {
+                "type": "Feature",
+                "properties": {
+                  "address": .properties.ADDRESS,
+                },
+                "geometry": .geometry
+              }
+            ]
+          }' $DATA_DIR/address-new.geojson > $DATA_DIR/address-new-trimmed.geojson
+          echo "Trimmed GeoJSON file created"
+
+      - name: Check if the new trimmed GeoJSON file is valid
+        run: |
+          if [ ! -s $DATA_DIR/address-new-trimmed.geojson ]; then
+            echo "New GeoJSON file is invalid or empty."
+            exit 1
+          fi
+
+      - name: Check if the GeoJSON files are identical
+        run: |
+          if diff $DATA_DIR/address-new-trimmed.geojson $DATA_DIR/address.geojson > /dev/null; then
+            echo "The new GeoJSON file is identical to the previous one."
+            echo "identical=true" >> $GITHUB_ENV
+          fi
+
+      - name: Backup old GeoJSON
+        run: |
+          if [ "$identical" != "true" ]; then
+            if [ -f $DATA_DIR/address.geojson ]; then
+              mv -f $DATA_DIR/address.geojson $DATA_DIR/address-backup.geojson  # Backup original
+              mv -f $DATA_DIR/address-new-trimmed.geojson $DATA_DIR/address.geojson # New file
+              echo "Old file renamed to address-backup.geojson"
+            fi
+          fi
+
+      - name: Generate tileset
+        run: |
+          tippecanoe -o $DATA_DIR/mckenzie-addresses.mbtiles -zg -ai --force --layer "addresses" --drop-densest-as-needed \
+          --extend-zooms-if-still-dropping $DATA_DIR/address.geojson
+
+      - name: Cleanup
+        if: always()
+        run: |
+          echo "Cleaning up..."
+          find $DATA_DIR -type f ! -name "*.geojson" ! -name "*.mbtiles" -exec rm -f {} \;
+          rm -f $DATA_DIR/address-new.geojson
+          rm -f $DATA_DIR/address-new-trimmed.geojson
+          rm -rf extracted
+          echo "Cleanup complete."
+
+      - name: Commit and push GeoJSON file
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@users.noreply.github.com"
+          git add .
+          git diff --cached --exit-code || (git commit -m "Geojson update $CURRENT_DATE" && git push)
+        if: ${{ success() }}
