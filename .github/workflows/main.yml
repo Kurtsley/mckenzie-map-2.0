@@ -39,7 +39,7 @@ jobs:
         run: |
           SHAPEFILE=$(find extracted -name "*.shp" | head -n 1)
           if [ -n "$SHAPEFILE" ]; then
-            ogr2ogr -f "GeoJSON" $DATA_DIR/address-new.geojson $SHAPEFILE
+            ogr2ogr -f "GeoJSON" -t_srs EPSG:4326 $DATA_DIR/address-new.geojson $SHAPEFILE
             echo "GeoJSON file created: address-new.geojson"
           else
             echo "No shapefile found in the archive."
