@@ -88,7 +88,7 @@ jobs:
 
       - name: Generate tileset
         run: |
-          tippecanoe -o $DATA_DIR/mckenzie-addresses.mbtiles -zg -ai --force --layer "addresses" --drop-densest-as-needed \
+          tippecanoe -o $DATA_DIR/mckenzie-addresses.mbtiles -z10 -ai --force --layer "addresses" --drop-densest-as-needed \
           --extend-zooms-if-still-dropping $DATA_DIR/address.geojson
 
       - name: Cleanup
