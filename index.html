@@ -38,7 +38,7 @@
                 style: 'mapbox://styles/kurtsley/cmo0pfi7l001s01rv9xr14bck',
                 center: [-103.43862939401251, 47.78908392054084],  // Coordinates for the center
                 zoom: 10,
-                customAttribution: "Developed by Kurtsley",
+                customAttribution: "© Kurtsley 2025",
             });
 
             // No zoom or rotate
@@ -60,7 +60,7 @@
             });
 
             let geojsonData = null;
-            fetch('data/addresses-new.geojson')
+            fetch('data/address.geojson')
                 .then(response => response.json())
                 .then(data => {
                     geojsonData = data;
@@ -132,6 +132,7 @@
                     zoom: 14,
                     marker: false,
                     limit: 20,
+                    minLength: 3
                 });
 
                 map.addControl(geocoder, 'top-left');
